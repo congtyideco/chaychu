@@ -2,61 +2,66 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Quản Trị Tin Chạy - IDECO</title>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700;800&display=swap" rel="stylesheet">
+<title>Quản Trị Tin Chạy IDECO - Cao Cấp</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
 <style>
-    /* CSS đồng bộ giao diện hiện đại */
-    :root { --bg: #0a0e1a; --surface: #111827; --accent: #00d4ff; --text: #e2e8f0; }
-    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; }
-    .card { background: var(--surface); border: 1px solid #1e2d45; border-radius: 16px; padding: 30px; max-width: 800px; margin: auto; }
-    textarea { width: 100%; height: 250px; background: #1a2235; border: 1px solid #1e2d45; color: white; padding: 15px; border-radius: 10px; font-size: 16px; outline: none; margin-bottom: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; }
-    input, select { background: #1a2235; border: 1px solid #1e2d45; color: white; padding: 10px; border-radius: 8px; }
-    .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+    :root { --bg: #0a0e1a; --surface: #111827; --accent: #00d4ff; --text: #e2e8f0; --border: #1e2d45; }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: var(--surface); padding: 30px; border-radius: 16px; border: 1px solid var(--border); }
+    h2 { color: var(--accent); margin-bottom: 20px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+    textarea { width: 100%; height: 200px; background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 15px; border-radius: 10px; font-size: 16px; outline: none; resize: vertical; margin-bottom: 20px; }
+    .settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #64748b; }
+    input, select { background: #1a2235; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; }
+    .btn-group { display: flex; gap: 10px; }
+    .btn { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
     .btn-run { background: #00e676; color: #000; }
     .btn-stop { background: #334155; color: #fff; }
+    .status { margin-top: 15px; text-align: center; font-size: 13px; color: #64748b; }
 </style>
 </head>
 <body>
-<div class="card">
-    <h2 style="color:var(--accent); margin-bottom:20px;">📡 ĐIỀU KHIỂN TIN CHẠY</h2>
-    <textarea id="msgInput" placeholder="Dán đoạn văn bản dài tại đây..."></textarea>
-    <div class="grid">
-        <div class="field"><label>Màu chữ</label><input type="color" id="tColor" value="#ffffff"></div>
-        <div class="field"><label>Cỡ chữ (px)</label><input type="number" id="fSize" value="24"></div>
-        <div class="field"><label>Tốc độ (hệ số)</label><input type="number" id="tSpeed" value="25"></div>
-        <div class="field"><label>Định dạng</label><select id="fWeight"><option value="400">Thường</option><option value="700" selected>Đậm</option></select></div>
-        <div class="field"><label>Cách đáy (px)</label><input type="number" id="bOffset" value="38"></div>
+<div class="container">
+    <h2>📡 ĐIỀU KHIỂN TIN CHẠY SIÊU NHẠY</h2>
+    <textarea id="msgInput" placeholder="Nhập văn bản dài tại đây..."></textarea>
+    <div class="settings">
+        <div class="field"><label>Màu chữ</label><input type="color" id="color" value="#ffffff"></div>
+        <div class="field"><label>Cỡ chữ (px)</label><input type="number" id="size" value="24"></div>
+        <div class="field"><label>Tốc độ (giây)</label><input type="number" id="speed" value="30"></div>
+        <div class="field"><label>Cách đáy (px)</label><input type="number" id="bottom" value="38"></div>
     </div>
-    <button class="btn btn-run" onclick="save(true)">🚀 LƯU VÀ CHẠY CHỮ</button>
-    <button class="btn btn-stop" onclick="save(false)">⏹ DỪNG PHÁT</button>
+    <div class="btn-group">
+        <button class="btn btn-run" onclick="send(true)">🚀 PHÁT TIN NGAY</button>
+        <button class="btn btn-stop" onclick="send(false)">⏹ DỪNG</button>
+    </div>
+    <div id="status" class="status">Đang kết nối...</div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    const config = {
+    const firebaseConfig = {
         apiKey: "AIzaSyC5-yB_TwgaxqjO7VXFQ6L22FyLRyDZ878",
         databaseURL: "https://bevy-3c9da-default-rtdb.firebaseio.com",
     };
 
-    const app = initializeApp(config);
+    const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    window.save = (run) => {
+    window.send = (isActive) => {
         const text = document.getElementById('msgInput').value.trim();
-        set(ref(db, 'IDECO_FINAL_SYNC'), {
-            text: text.replace(/\n/g, " "),
-            color: document.getElementById('tColor').value,
-            size: document.getElementById('fSize').value,
-            speed: document.getElementById('tSpeed').value,
-            weight: document.getElementById('fWeight').value,
-            bottom: document.getElementById('bOffset').value,
-            active: run,
-            ts: Date.now()
-        }).then(() => alert(run ? "Đang phát!" : "Đã dừng!"));
+        set(ref(db, 'IDECO_TICKER_MASTER'), {
+            content: text.replace(/\n/g, " "),
+            color: document.getElementById('color').value,
+            size: document.getElementById('size').value,
+            speed: document.getElementById('speed').value,
+            bottom: document.getElementById('bottom').value,
+            active: isActive,
+            updateId: Date.now() // Ép script phải refresh animation
+        }).then(() => {
+            document.getElementById('status').innerText = isActive ? "✅ ĐÃ GỬI LỆNH PHÁT" : "⏹ ĐÃ GỬI LỆNH DỪNG";
+        });
     };
 </script>
 </body>
