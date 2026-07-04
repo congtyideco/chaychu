@@ -1,70 +1,395 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Quản Trị Tin Chạy IDECO - Master</title>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #0a0e1a; --surface: #111827; --accent: #00d4ff; --text: #e2e8f0; --border: #1e2d45; }
-        body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: var(--surface); padding: 30px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        h2 { color: var(--accent); margin-bottom: 20px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
-        textarea { width: 100%; height: 220px; background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 15px; border-radius: 10px; font-size: 16px; outline: none; resize: vertical; margin-bottom: 20px; }
-        .settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #64748b; }
-        input, select { background: #1a2235; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 15px; border-radius: 10px; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
-        .btn-run { background: #00e676; color: #000; }
-        .btn-stop { background: #334155; color: #fff; }
-        .status { margin-top: 15px; text-align: center; font-size: 13px; color: #64748b; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản Trị Tin Chạy IDECO - Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;800&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #07090f;
+        --surface: #0e1320;
+        --surface-2: #131a2b;
+        --accent: #00d4ff;
+        --accent-dim: rgba(0,212,255,.12);
+        --green: #00e676;
+        --red: #ff5370;
+        --text: #e6ecf5;
+        --muted: #7285a3;
+        --border: #1d2941;
+        --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Be Vietnam Pro', sans-serif;
+        background:
+            radial-gradient(900px 400px at 80% -10%, rgba(0,212,255,.07), transparent 60%),
+            radial-gradient(700px 350px at 0% 110%, rgba(0,230,118,.05), transparent 60%),
+            var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 24px 16px 140px;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 22px; flex-wrap: wrap; gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand .icon {
+        width: 44px; height: 44px; border-radius: 12px;
+        background: linear-gradient(135deg, #00d4ff, #0066ff);
+        display: grid; place-items: center; font-size: 22px;
+        box-shadow: 0 6px 18px rgba(0,120,255,.35);
+    }
+    .brand h1 { font-size: 18px; font-weight: 800; letter-spacing: .3px; }
+    .brand p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .live-state {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 16px; border-radius: 999px; font-size: 12px; font-weight: 600;
+        border: 1px solid var(--border); background: var(--surface);
+        color: var(--muted); transition: .3s;
+    }
+    .live-state .dot { width: 9px; height: 9px; border-radius: 50%; background: #475569; transition: .3s; }
+    .live-state.on { color: var(--green); border-color: rgba(0,230,118,.4); background: rgba(0,230,118,.07); }
+    .live-state.on .dot { background: var(--green); box-shadow: 0 0 0 0 rgba(0,230,118,.6); animation: pulse 1.6s infinite; }
+    @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(0,230,118,0); } 100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); } }
+
+    /* ── Cards ── */
+    .card {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 22px; margin-bottom: 18px;
+    }
+    .card-title {
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1.5px; color: var(--muted); margin-bottom: 14px;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .card-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    textarea {
+        width: 100%; min-height: 150px; background: #0a0f1c;
+        border: 1px solid var(--border); color: #fff; padding: 15px;
+        border-radius: 10px; font-size: 15px; line-height: 1.6;
+        font-family: inherit; outline: none; resize: vertical; transition: border-color .2s;
+    }
+    textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .char-count { text-align: right; font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'IBM Plex Mono', monospace; }
+
+    /* ── Settings grid ── */
+    .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+    @media (max-width: 560px) { .settings { grid-template-columns: 1fr; } }
+
+    .field label {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 12.5px; font-weight: 600; color: var(--text); margin-bottom: 9px;
+    }
+    .field label .val {
+        font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+        color: var(--accent); background: var(--accent-dim);
+        padding: 2px 9px; border-radius: 6px; min-width: 58px; text-align: center;
+    }
+
+    /* Sliders */
+    input[type="range"] {
+        -webkit-appearance: none; appearance: none;
+        width: 100%; height: 6px; border-radius: 999px;
+        background: linear-gradient(to right, var(--accent) var(--fill, 50%), #22304e var(--fill, 50%));
+        outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none;
+        width: 20px; height: 20px; border-radius: 50%;
+        background: #fff; border: 4px solid var(--accent);
+        box-shadow: 0 2px 8px rgba(0,212,255,.5); cursor: grab; transition: transform .15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.15); }
+    input[type="range"]::-moz-range-thumb {
+        width: 20px; height: 20px; border-radius: 50%;
+        background: #fff; border: 4px solid var(--accent);
+        box-shadow: 0 2px 8px rgba(0,212,255,.5); cursor: grab;
+    }
+    input[type="range"]:focus-visible { box-shadow: 0 0 0 3px var(--accent-dim); }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    /* Color picker */
+    .color-row { display: flex; align-items: center; gap: 10px; }
+    input[type="color"] {
+        -webkit-appearance: none; appearance: none;
+        width: 46px; height: 38px; border: 1px solid var(--border);
+        border-radius: 9px; background: none; cursor: pointer; padding: 3px;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+    .swatches { display: flex; gap: 7px; flex-wrap: wrap; }
+    .swatch {
+        width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+        border: 2px solid transparent; transition: .15s;
+    }
+    .swatch:hover { transform: scale(1.18); }
+    .swatch.active { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+
+    /* ── Preview ── */
+    .preview-card { padding: 0; overflow: hidden; }
+    .preview-head { padding: 16px 22px 0; }
+    .preview-screen {
+        position: relative; height: 240px; margin: 14px 18px 18px;
+        border-radius: 10px; border: 1px solid var(--border); overflow: hidden;
+        background:
+            linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px),
+            linear-gradient(180deg, #101828, #0a0f1c);
+        background-size: 24px 24px, 24px 24px, 100% 100%;
+    }
+    .preview-screen .label {
+        position: absolute; top: 10px; left: 12px; font-size: 10px;
+        color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+    }
+    .bottom-guide {
+        position: absolute; left: 0; right: 0; height: 0;
+        border-top: 1px dashed rgba(0,212,255,.45); pointer-events: none;
+    }
+    .bottom-guide span {
+        position: absolute; right: 8px; top: -20px;
+        font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent);
+        background: rgba(0,212,255,.1); padding: 2px 7px; border-radius: 5px;
+    }
+    .ticker-track {
+        position: absolute; left: 0; right: 0; overflow: hidden;
+        white-space: nowrap; pointer-events: none;
+    }
+    .ticker-text {
+        display: inline-block; padding-left: 100%;
+        font-weight: 600; text-shadow: 0 2px 8px rgba(0,0,0,.7);
+        animation: marquee linear infinite;
+        will-change: transform;
+    }
+    @keyframes marquee { to { transform: translateX(-100%); } }
+    @media (prefers-reduced-motion: reduce) { .ticker-text { animation-duration: 60s !important; } }
+
+    /* ── Action bar ── */
+    .action-bar {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+        background: rgba(10,14,26,.85); backdrop-filter: blur(14px);
+        border-top: 1px solid var(--border); padding: 14px 16px;
+    }
+    .action-inner { max-width: 860px; margin: 0 auto; display: flex; gap: 12px; align-items: center; }
+    .btn {
+        padding: 14px 20px; border-radius: 11px; cursor: pointer; border: none;
+        font-weight: 700; font-size: 14px; font-family: inherit;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: transform .12s, box-shadow .2s, opacity .2s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { opacity: .5; cursor: wait; }
+    .btn-run {
+        flex: 1; background: linear-gradient(135deg, #00e676, #00b85c); color: #04170c;
+        box-shadow: 0 6px 20px rgba(0,230,118,.28);
+    }
+    .btn-run:hover:not(:disabled) { box-shadow: 0 8px 26px rgba(0,230,118,.45); }
+    .btn-stop { background: var(--surface-2); color: var(--red); border: 1px solid rgba(255,83,112,.35); min-width: 130px; }
+    .btn-stop:hover:not(:disabled) { background: rgba(255,83,112,.12); }
+    #status { font-size: 12px; color: var(--muted); min-width: 90px; text-align: center; }
+    #status.ok { color: var(--green); }
+    #status.err { color: var(--red); }
+    @media (max-width: 560px) {
+        .action-inner { flex-wrap: wrap; }
+        #status { width: 100%; order: 3; }
+    }
+</style>
 </head>
 <body>
 <div class="container">
-    <h2>📡 ĐIỀU KHIỂN TIN CHẠY (MASTER)</h2>
-    <textarea id="msgInput" placeholder="Nhập văn bản dài tại đây..."></textarea>
-    <div class="settings">
-        <div class="field"><label>Màu chữ</label><input type="color" id="color" value="#ffffff"></div>
-        <div class="field"><label>Cỡ chữ (px)</label><input type="number" id="size" value="24"></div>
-        <div class="field"><label>Tốc độ (30=Vừa)</label><input type="number" id="speed" value="30"></div>
-        <div class="field"><label>Cách đáy (px)</label><input type="number" id="bottom" value="38"></div>
+    <div class="header">
+        <div class="brand">
+            <div class="icon">📡</div>
+            <div>
+                <h1>ĐIỀU KHIỂN TIN CHẠY <span style="color:var(--accent)">MASTER</span></h1>
+                <p>Hệ thống phát tin nội bộ IDECO · Realtime</p>
+            </div>
+        </div>
+        <div class="live-state" id="liveState"><span class="dot"></span><span id="liveLabel">Chưa phát</span></div>
     </div>
-    <div class="btn-group">
-        <button class="btn btn-run" onclick="send(true)">🚀 LƯU & PHÁT NGAY</button>
-        <button class="btn btn-stop" onclick="send(false)">⏹ DỪNG</button>
+
+    <div class="card">
+        <div class="card-title">Nội dung bản tin</div>
+        <textarea id="msgInput" placeholder="Nhập văn bản dài tại đây... (xuống dòng sẽ tự nối thành 1 hàng chạy)"></textarea>
+        <div class="char-count"><span id="charCount">0</span> ký tự</div>
     </div>
-    <div id="status" class="status">Sẵn sàng...</div>
+
+    <div class="card">
+        <div class="card-title">Tùy chỉnh hiển thị</div>
+        <div class="settings">
+            <div class="field">
+                <label>Cách đáy màn hình <span class="val" id="bottomVal">38 px</span></label>
+                <input type="range" id="bottom" min="0" max="300" step="1" value="38">
+                <div class="hint">Kéo để nâng dòng chữ lên cao hoặc hạ sát đáy — xem trước bên dưới.</div>
+            </div>
+            <div class="field">
+                <label>Cỡ chữ <span class="val" id="sizeVal">24 px</span></label>
+                <input type="range" id="size" min="12" max="72" step="1" value="24">
+            </div>
+            <div class="field">
+                <label>Tốc độ chạy <span class="val" id="speedVal">30</span></label>
+                <input type="range" id="speed" min="5" max="120" step="1" value="30">
+                <div class="hint">Số càng lớn chạy càng chậm (30 = vừa).</div>
+            </div>
+            <div class="field">
+                <label>Màu chữ <span class="val" id="colorVal">#FFFFFF</span></label>
+                <div class="color-row">
+                    <input type="color" id="color" value="#ffffff">
+                    <div class="swatches" id="swatches"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card preview-card">
+        <div class="preview-head"><div class="card-title">Xem trước trực tiếp</div></div>
+        <div class="preview-screen" id="previewScreen">
+            <span class="label">Màn hình mô phỏng</span>
+            <div class="bottom-guide" id="bottomGuide"><span id="guideLabel">38px</span></div>
+            <div class="ticker-track" id="tickerTrack">
+                <span class="ticker-text" id="tickerText">Nhập nội dung để xem trước bản tin chạy tại đây…</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="action-bar">
+    <div class="action-inner">
+        <button class="btn btn-run" id="btnRun" onclick="send(true)">🚀 LƯU &amp; PHÁT NGAY</button>
+        <button class="btn btn-stop" id="btnStop" onclick="send(false)">⏹ DỪNG PHÁT</button>
+        <div id="status">Sẵn sàng…</div>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyC5-yB_TwgaxqjO7VXFQ6L22FyLRyDZ878",
         databaseURL: "https://bevy-3c9da-default-rtdb.firebaseio.com",
     };
-
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig, "ideco-ticker-master");
     const db = getDatabase(app);
+    const NODE = 'IDECO_TICKER_MASTER';
 
+    const $ = id => document.getElementById(id);
+    const els = { msg: $('msgInput'), color: $('color'), size: $('size'), speed: $('speed'), bottom: $('bottom') };
+
+    /* ── Slider fill + value labels ── */
+    function paintRange(input) {
+        const min = +input.min, max = +input.max;
+        input.style.setProperty('--fill', ((input.value - min) / (max - min) * 100) + '%');
+    }
+
+    /* ── Preview ── */
+    function updatePreview() {
+        const screen = $('previewScreen');
+        const scale = 0.55; // mô phỏng thu nhỏ để vừa khung
+        const bottom = +els.bottom.value, size = +els.size.value, speed = +els.speed.value;
+
+        $('bottomVal').textContent = bottom + ' px';
+        $('sizeVal').textContent = size + ' px';
+        $('speedVal').textContent = speed;
+        $('colorVal').textContent = els.color.value.toUpperCase();
+        $('guideLabel').textContent = bottom + 'px';
+
+        const pxBottom = Math.min(bottom * scale, screen.clientHeight - 30);
+        $('bottomGuide').style.bottom = pxBottom + 'px';
+        const track = $('tickerTrack');
+        track.style.bottom = pxBottom + 'px';
+
+        const t = $('tickerText');
+        t.textContent = (els.msg.value.trim() || 'Nhập nội dung để xem trước bản tin chạy tại đây…').replace(/\n/g, ' ');
+        t.style.color = els.color.value;
+        t.style.fontSize = Math.max(10, size * scale) + 'px';
+        // tốc độ: số lớn = chậm (giữ đúng logic cũ)
+        t.style.animationDuration = Math.max(4, speed * 0.5) + 's';
+
+        $('charCount').textContent = els.msg.value.length;
+
+        // đồng bộ màu active của swatch
+        document.querySelectorAll('.swatch').forEach(s =>
+            s.classList.toggle('active', s.dataset.c.toLowerCase() === els.color.value.toLowerCase()));
+    }
+
+    ['input', 'change'].forEach(ev => {
+        Object.values(els).forEach(el => el.addEventListener(ev, () => {
+            if (el.type === 'range') paintRange(el);
+            updatePreview();
+        }));
+    });
+
+    /* ── Swatches màu nhanh ── */
+    const colors = ['#ffffff', '#00d4ff', '#00e676', '#ffd600', '#ff9100', '#ff5370', '#e040fb'];
+    const sw = $('swatches');
+    colors.forEach(c => {
+        const d = document.createElement('div');
+        d.className = 'swatch'; d.dataset.c = c; d.style.background = c;
+        d.title = c;
+        d.onclick = () => { els.color.value = c; updatePreview(); };
+        sw.appendChild(d);
+    });
+
+    /* ── Trạng thái phát realtime + nạp cấu hình đã lưu ── */
+    let loaded = false;
+    onValue(ref(db, NODE), snap => {
+        const d = snap.val();
+        const state = $('liveState');
+        if (d && d.active) { state.classList.add('on'); $('liveLabel').textContent = 'ĐANG PHÁT'; }
+        else { state.classList.remove('on'); $('liveLabel').textContent = 'Chưa phát'; }
+        // Nạp cấu hình lần đầu để tiếp tục chỉnh sửa
+        if (d && !loaded) {
+            loaded = true;
+            if (d.content) els.msg.value = d.content;
+            if (d.color) els.color.value = d.color;
+            if (d.size) els.size.value = d.size;
+            if (d.speed) els.speed.value = d.speed;
+            if (d.bottom) els.bottom.value = d.bottom;
+            [els.size, els.speed, els.bottom].forEach(paintRange);
+            updatePreview();
+        }
+    });
+
+    /* ── Gửi Firebase (giữ nguyên cấu trúc dữ liệu cũ) ── */
     window.send = (isActive) => {
-        const text = document.getElementById('msgInput').value.trim();
-        if(isActive && !text) return alert("Vui lòng nhập văn bản!");
-        
-        set(ref(db, 'IDECO_TICKER_MASTER'), {
-            content: text.replace(/\n/g, " "), // Ép thành 1 hàng
-            color: document.getElementById('color').value,
-            size: document.getElementById('size').value,
-            speed: document.getElementById('speed').value,
-            bottom: document.getElementById('bottom').value,
+        const text = els.msg.value.trim();
+        if (isActive && !text) { setStatus('⚠️ Vui lòng nhập văn bản!', 'err'); els.msg.focus(); return; }
+
+        $('btnRun').disabled = $('btnStop').disabled = true;
+        setStatus('Đang gửi…');
+
+        set(ref(db, NODE), {
+            content: text.replace(/\n/g, " "),
+            color: els.color.value,
+            size: els.size.value,
+            speed: els.speed.value,
+            bottom: els.bottom.value,
             active: isActive,
-            trigger: Date.now() // Buộc script khách phải cập nhật ngay
+            trigger: Date.now()
         }).then(() => {
-            document.getElementById('status').innerText = isActive ? "✅ Đã phát!" : "⏹ Đã dừng.";
+            setStatus(isActive ? '✅ Đã phát!' : '⏹ Đã dừng.', 'ok');
+        }).catch(e => {
+            setStatus('❌ Lỗi: ' + e.message, 'err');
+        }).finally(() => {
+            $('btnRun').disabled = $('btnStop').disabled = false;
         });
     };
+
+    function setStatus(msg, cls) {
+        const s = $('status');
+        s.textContent = msg;
+        s.className = cls || '';
+    }
+
+    [els.size, els.speed, els.bottom].forEach(paintRange);
+    updatePreview();
 </script>
 </body>
 </html>
